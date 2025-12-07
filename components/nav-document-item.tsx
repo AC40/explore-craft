@@ -17,7 +17,7 @@ export function NavDocumentItem({ document, isActive }: NavDocumentItemProps) {
       isActive={isActive}
       className="data-[active=true]:bg-transparent"
     >
-      <Link href={document.url}>
+      <Link href={document.id}>
         <File />
         <span>{document.title}</span>
       </Link>

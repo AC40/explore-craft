@@ -8,12 +8,14 @@ export type CraftFolder = {
 export type CraftDocument = {
   id: string;
   title: string;
-  url: string;
 };
+
+export type CraftConnectionType = "folders" | "documents" | "daily_notes";
 
 export type CraftConnection = {
   id: string;
   name: string;
   url: string;
   apiKey?: string;
+  type: CraftConnectionType;
 };

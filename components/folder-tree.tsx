@@ -32,7 +32,7 @@ export function FolderTree({ connection, item }: FolderTreeProps) {
   if (!isFolder(item)) {
     return (
       <SidebarMenuButton asChild>
-        <Link href={item.url}>
+        <Link href={item.id}>
           <File />
           <span>{item.title}</span>
         </Link>

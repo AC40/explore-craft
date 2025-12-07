@@ -1,6 +1,6 @@
 "use client";
 
-import { CraftConnection } from "@/types/craft";
+import { CraftConnection, CraftConnectionType } from "@/types/craft";
 import {
   createContext,
   useContext,
@@ -57,17 +57,22 @@ export function CraftProvider({ children }: { children: ReactNode }) {
     const storedConnections = localStorage.getItem("connections");
     if (storedConnections) {
       const parsed = JSON.parse(storedConnections);
-      _setConnections(parsed);
+      // Migrate old connections without type to "folders" type
+      const migrated = parsed.map((c: CraftConnection) => ({
+        ...c,
+        type: c.type || ("folders" as CraftConnectionType),
+      }));
+      _setConnections(migrated);
 
       const storedActive = localStorage.getItem("activeConnection");
       if (storedActive) {
         const active = JSON.parse(storedActive);
-        const found = parsed.find((c: CraftConnection) => c.id === active.id);
+        const found = migrated.find((c: CraftConnection) => c.id === active.id);
         if (found) {
           _setActiveConnection(found);
         }
       } else {
-        _setActiveConnection(parsed[0] || null);
+        _setActiveConnection(migrated[0] || null);
       }
     }
   }, []);

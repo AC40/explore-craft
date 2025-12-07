@@ -17,12 +17,24 @@ import {
 } from "@/components/ui/sidebar";
 import { useCraft } from "@/hooks/use-craft";
 import { redirect } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const { connections } = useCraft();
+  const { connections, activeConnection } = useCraft();
+  const router = useRouter();
+
   if (connections.length === 0) {
     redirect("/");
   }
+
+  useEffect(() => {
+    if (activeConnection) {
+      if (activeConnection.type === "documents") {
+        router.push("/view/documents");
+      }
+    }
+  }, [activeConnection, router]);
   return (
     <SidebarProvider>
       <AppSidebar />

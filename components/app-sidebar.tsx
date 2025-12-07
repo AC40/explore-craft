@@ -1,22 +1,10 @@
 "use client";
 
 import * as React from "react";
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { ConnectionSwitcher } from "@/components/connection-switcher";
+import { NavDocuments } from "@/components/nav-documents";
 import {
   Sidebar,
   SidebarContent,
@@ -44,7 +32,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <ConnectionSwitcher connections={connections} />
       </SidebarHeader>
       <SidebarContent>
-        {activeConnection && <NavFolders connection={activeConnection} />}
+        {activeConnection &&
+          (activeConnection.type === "folders" ? (
+            <NavFolders connection={activeConnection} />
+          ) : activeConnection.type === "documents" ? (
+            <NavDocuments connection={activeConnection} />
+          ) : activeConnection.type === "daily_notes" ? (
+            <div className="p-4 text-sm text-muted-foreground">
+              Daily Notes coming soon...
+            </div>
+          ) : null)}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
