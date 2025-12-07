@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import {
   ChevronRight,
+  CopyIcon,
   Folder,
   Forward,
   MoreHorizontal,
@@ -28,6 +30,8 @@ import {
 } from "@/components/ui/collapsible";
 import { CraftFolder, CraftDocument, CraftConnection } from "@/types/craft";
 import { FolderTree } from "./folder-tree";
+import { toast } from "sonner";
+import { useFolderExpansion } from "@/hooks/use-folder-expansion";
 
 interface NavFolderItemProps {
   folder: CraftFolder;
@@ -36,15 +40,22 @@ interface NavFolderItemProps {
 
 export function NavFolderItem({ folder, connection }: NavFolderItemProps) {
   const { isMobile } = useSidebar();
+  const { isExpanded, setExpanded } = useFolderExpansion();
+  const isOpen = isExpanded(folder.id, true);
 
   return (
-    <Collapsible asChild defaultOpen={true} className="group/collapsible">
+    <Collapsible
+      asChild
+      open={isOpen}
+      onOpenChange={(open) => setExpanded(folder.id, open)}
+      className="group/collapsible"
+    >
       <SidebarMenuItem>
         <SidebarMenuButton tooltip={folder.name} asChild>
-          <a href={`/folders/${folder.id}`}>
+          <Link href={`/view/folder/${folder.id}`}>
             <Folder />
             <span>{folder.name}</span>
-          </a>
+          </Link>
         </SidebarMenuButton>
         <div className="absolute top-1.5 right-1 flex items-center gap-0.5">
           <DropdownMenu>
@@ -59,18 +70,14 @@ export function NavFolderItem({ folder, connection }: NavFolderItemProps) {
               side={isMobile ? "bottom" : "right"}
               align={isMobile ? "end" : "start"}
             >
-              <DropdownMenuItem>
-                <Folder className="text-muted-foreground" />
-                <span>View Folder</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Forward className="text-muted-foreground" />
-                <span>Share Folder</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Trash2 className="text-muted-foreground" />
-                <span>Delete Folder</span>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigator.clipboard.writeText(folder.id);
+                  toast.success("Folder ID copied to clipboard");
+                }}
+              >
+                <CopyIcon className="text-muted-foreground" />
+                <span>Copy Folder ID</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -85,7 +92,7 @@ export function NavFolderItem({ folder, connection }: NavFolderItemProps) {
         </div>
         {folder.folders && folder.folders.length > 0 && (
           <CollapsibleContent>
-            <SidebarMenuSub>
+            <SidebarMenuSub className="pr-0 mr-0">
               {folder.folders.map((subFolder) => (
                 <FolderTree
                   connection={connection}

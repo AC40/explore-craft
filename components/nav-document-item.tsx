@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { File } from "lucide-react";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { CraftDocument } from "@/types/craft";
@@ -16,10 +17,10 @@ export function NavDocumentItem({ document, isActive }: NavDocumentItemProps) {
       isActive={isActive}
       className="data-[active=true]:bg-transparent"
     >
-      <a href={document.url}>
+      <Link href={document.url}>
         <File />
         <span>{document.title}</span>
-      </a>
+      </Link>
     </SidebarMenuButton>
   );
 }

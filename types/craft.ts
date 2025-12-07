@@ -13,6 +13,7 @@ export type CraftDocument = {
 
 export type CraftConnection = {
   id: string;
+  name: string;
   url: string;
   apiKey?: string;
 };

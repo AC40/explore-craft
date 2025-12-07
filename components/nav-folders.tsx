@@ -22,6 +22,8 @@ export function NavFolders({ connection }: { connection: CraftConnection }) {
     queryKey: [connection.id, "folders"],
     queryFn: () => craftAPI.getFolders(connection),
     enabled: !!connection.id,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
   });
 
   if (isLoading) {

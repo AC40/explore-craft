@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronRight, Folder, File } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -16,6 +17,7 @@ import {
 import { CraftFolder, CraftDocument, CraftConnection } from "@/types/craft";
 import { craftAPI } from "@/lib/api";
 import { isFolder } from "@/lib/folders";
+import { useFolderExpansion } from "@/hooks/use-folder-expansion";
 
 interface FolderTreeProps {
   connection: CraftConnection;
@@ -30,10 +32,10 @@ export function FolderTree({ connection, item }: FolderTreeProps) {
   if (!isFolder(item)) {
     return (
       <SidebarMenuButton asChild>
-        <a href={item.url}>
+        <Link href={item.url}>
           <File />
           <span>{item.title}</span>
-        </a>
+        </Link>
       </SidebarMenuButton>
     );
   }
@@ -47,15 +49,21 @@ interface FolderTreeItemProps {
 }
 
 function FolderTreeItem({ connection, folder }: FolderTreeItemProps) {
+  const { isExpanded, setExpanded } = useFolderExpansion();
   const defaultOpen = folder.name === "components" || folder.name === "ui";
+  const isOpen = isExpanded(folder.id, defaultOpen);
 
   return (
     <SidebarMenuItem>
-      <Collapsible className="group/collapsible" defaultOpen={defaultOpen}>
+      <Collapsible
+        className="group/collapsible"
+        open={isOpen}
+        onOpenChange={(open) => setExpanded(folder.id, open)}
+      >
         <SidebarMenuButton tooltip={folder.name} asChild>
-          <a href={`/folders/${folder.id}`}>
+          <Link href={`/view/folder/${folder.id}`}>
             <span>{folder.name}</span>
-          </a>
+          </Link>
         </SidebarMenuButton>
 
         {folder.folders.length > 0 && (
@@ -67,7 +75,7 @@ function FolderTreeItem({ connection, folder }: FolderTreeItemProps) {
               </SidebarMenuAction>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <SidebarMenuSub>
+              <SidebarMenuSub className="pr-0 mr-0">
                 {folder.folders.map((subFolder) => (
                   <FolderTree
                     key={subFolder.id}

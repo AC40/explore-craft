@@ -27,6 +27,7 @@ class CraftAPI {
       throw new Error(`Failed to fetch documents: ${response.statusText}`);
     }
     const data = await response.json();
+    console.log(data);
     return data.items as CraftDocument[];
   }
 
