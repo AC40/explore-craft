@@ -1,4 +1,9 @@
-import { CraftConnection, CraftDocument, CraftFolder } from "@/types/craft";
+import {
+  CraftConnection,
+  CraftDocument,
+  CraftFolder,
+  CraftTask,
+} from "@/types/craft";
 
 class CraftAPI {
   async getDocuments(
@@ -40,6 +45,25 @@ class CraftAPI {
     }
     const data = await response.json();
     return data.items as CraftFolder[];
+  }
+
+  async getTasks(
+    connection: CraftConnection,
+    scope: "active" | "upcoming" | "inbox" | "logbook"
+  ) {
+    const queryParams = new URLSearchParams();
+    queryParams.set("scope", scope);
+    const response = await fetch(
+      this.constructUrl(connection, "tasks", queryParams),
+      {
+        headers: this.constructHeaders(connection),
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.items as CraftTask[];
   }
 
   constructUrl(

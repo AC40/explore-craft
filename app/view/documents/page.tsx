@@ -22,6 +22,7 @@ import { CopyIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
+import { AppFooter } from "@/components/app-footer";
 
 export default function DocumentsPage() {
   const { activeConnection } = useCraft();
@@ -128,6 +129,7 @@ export default function DocumentsPage() {
             </>
           )}
         </div>
+        <AppFooter />
       </SidebarInset>
     </SidebarProvider>
   );

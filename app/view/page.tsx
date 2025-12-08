@@ -19,6 +19,7 @@ import { useCraft } from "@/hooks/use-craft";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { AppFooter } from "@/components/app-footer";
 
 export default function Page() {
   const { connections, activeConnection } = useCraft();
@@ -32,6 +33,8 @@ export default function Page() {
     if (activeConnection) {
       if (activeConnection.type === "documents") {
         router.push("/view/documents");
+      } else if (activeConnection.type === "daily_notes") {
+        router.push("/view/tasks/active");
       }
     }
   }, [activeConnection, router]);
@@ -58,14 +61,15 @@ export default function Page() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-          </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 pt-0 text-center">
+          <h1 className="text-2xl font-bold text-foreground">
+            Welcome to the Craft API Explorer
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Select an item in the sidebar to get started
+          </p>
         </div>
+        <AppFooter />
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,15 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  ChevronsUpDown,
-  Eye,
-  EyeOff,
-  Plus,
-  ServerIcon,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { ChevronsUpDown, Plus, ServerIcon, Pencil, Trash2 } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -17,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -28,10 +19,11 @@ import {
 } from "@/components/ui/sidebar";
 import { CraftConnection, CraftConnectionType } from "@/types/craft";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useCraft } from "@/hooks/use-craft";
 import { toast } from "sonner";
+import { validateConnection, extractConnectionName } from "@/lib/utils";
+import { ConnectionForm } from "./connection-form";
 
 export function ConnectionSwitcher({
   connections,
@@ -56,76 +48,38 @@ export function ConnectionSwitcher({
     React.useState<CraftConnection | null>(null);
   const [isDeleteConnectionDialogOpen, setIsDeleteConnectionDialogOpen] =
     React.useState(false);
+  const resetForm = () => {
+    setUrl("");
+    setConnectionName("");
+    setConnectionType("folders");
+    setApiKey("");
+  };
+
   const handleAddConnection = async () => {
     if (!url) {
       toast.error("URL is required");
       return;
     }
 
-    const checkConnection = async () => {
-      const headers = new Headers();
-      if (apiKey) {
-        headers.set("Authorization", `Bearer ${apiKey}`);
-      }
-
-      // Check different endpoints based on connection type
-      let endpoint = "/collections";
-      if (connectionType === "documents") {
-        endpoint = "/documents";
-      } else if (connectionType === "daily_notes") {
-        endpoint = "/documents?location=daily_notes";
-      }
-
-      const checkConnection = await fetch(url + endpoint, { headers });
-
-      if (!checkConnection.ok) {
-        let errorMessage = "Failed to connect to Craft.";
-
-        if (checkConnection.status === 401) {
-          errorMessage += "Please check if the API key is correct.";
-        }
-        if (checkConnection.status === 404) {
-          errorMessage += "Please check if the URL is correct.";
-        }
-        if (checkConnection.status === 500) {
-          errorMessage += "Internal server error.";
-        }
-
-        if (!apiKey) {
-          errorMessage += "Did you maybe forget to add the API key?";
-        }
-
-        toast.error(errorMessage);
-        return false;
-      }
-
-      return true;
-    };
-    const success = await checkConnection();
-    if (!success) {
+    const validation = await validateConnection(url, apiKey, connectionType);
+    if (!validation.success) {
+      toast.error(validation.error);
       return;
     }
 
-    let finalConnectionName = connectionName;
-    if (!finalConnectionName) {
-      const match = url.match(/\/links\/([^\/]+)/);
-      finalConnectionName = match?.[1] || new URL(url).hostname;
-    }
-    setConnections([
-      ...connections,
-      {
-        id: crypto.randomUUID(),
-        name: finalConnectionName,
-        url,
-        apiKey,
-        type: connectionType,
-      },
-    ]);
+    const newConnection: CraftConnection = {
+      id: crypto.randomUUID(),
+      name: extractConnectionName(url, connectionName),
+      url,
+      apiKey,
+      type: connectionType,
+    };
+
+    setConnections([...connections, newConnection]);
+    setActiveConnection(newConnection);
     setIsAddConnectionDialogOpen(false);
-    setUrl("");
-    setConnectionName("");
-    setConnectionType("folders");
-    setApiKey("");
+    resetForm();
+    toast.success("Connection added");
   };
 
   const handleEditConnection = (connection: CraftConnection) => {
@@ -137,66 +91,27 @@ export function ConnectionSwitcher({
     setIsEditConnectionDialogOpen(true);
   };
 
+  const handleCloseEditDialog = () => {
+    setIsEditConnectionDialogOpen(false);
+    setEditingConnection(null);
+    resetForm();
+  };
+
   const handleUpdateConnection = async () => {
     if (!editingConnection || !url) {
       toast.error("URL is required");
       return;
     }
 
-    const checkConnection = async () => {
-      const headers = new Headers();
-      if (apiKey) {
-        headers.set("Authorization", `Bearer ${apiKey}`);
-      }
-
-      // Check different endpoints based on connection type
-      let endpoint = "/collections";
-      if (connectionType === "documents") {
-        endpoint = "/documents";
-      } else if (connectionType === "daily_notes") {
-        endpoint = "/documents?location=daily_notes";
-      }
-
-      const checkConnection = await fetch(url + endpoint, { headers });
-
-      if (!checkConnection.ok) {
-        let errorMessage = "Failed to connect to Craft.";
-
-        if (checkConnection.status === 401) {
-          errorMessage += " Please check if the API key is correct.";
-        }
-        if (checkConnection.status === 404) {
-          errorMessage += " Please check if the URL is correct.";
-        }
-        if (checkConnection.status === 500) {
-          errorMessage += " Internal server error.";
-        }
-
-        if (!apiKey) {
-          errorMessage += " Did you maybe forget to add the API key?";
-        }
-
-        toast.error(errorMessage);
-        return false;
-      }
-
-      return true;
-    };
-
-    const success = await checkConnection();
-    if (!success) {
+    const validation = await validateConnection(url, apiKey, connectionType);
+    if (!validation.success) {
+      toast.error(validation.error);
       return;
-    }
-
-    let finalConnectionName = connectionName;
-    if (!finalConnectionName) {
-      const match = url.match(/\/links\/([^\/]+)/);
-      finalConnectionName = match?.[1] || new URL(url).hostname;
     }
 
     const updatedConnection: CraftConnection = {
       ...editingConnection,
-      name: finalConnectionName,
+      name: extractConnectionName(url, connectionName),
       url,
       apiKey,
       type: connectionType,
@@ -208,17 +123,14 @@ export function ConnectionSwitcher({
 
     setConnections(updatedConnections);
 
-    // Update active connection if it's the one being edited
     if (activeConnection?.id === editingConnection.id) {
       setActiveConnection(updatedConnection);
     }
 
     setIsEditConnectionDialogOpen(false);
     setEditingConnection(null);
-    setUrl("");
-    setConnectionName("");
-    setConnectionType("folders");
-    setApiKey("");
+    resetForm();
+    toast.success("Connection updated");
   };
 
   const handleDeleteConnection = (connection: CraftConnection) => {
@@ -259,16 +171,21 @@ export function ConnectionSwitcher({
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              tooltip={
+                isMobile
+                  ? undefined
+                  : activeConnection.name ?? activeConnection.url
+              }
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <ServerIcon className="size-4" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground group-data-[collapsible=icon]:size-6">
+                <ServerIcon className="size-4 group-data-[collapsible=icon]:size-3" />
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold">
                   {activeConnection.name ?? activeConnection.url}
                 </span>
               </div>
-              <ChevronsUpDown className="ml-auto" />
+              <ChevronsUpDown className="ml-auto group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -343,136 +260,56 @@ export function ConnectionSwitcher({
 
       <Dialog
         open={isAddConnectionDialogOpen}
-        onOpenChange={setIsAddConnectionDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add connection</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <Input
-              type="text"
-              placeholder="Connection name (optional, but helpful 😉)"
-              required
-              value={connectionName}
-              onChange={(e) => setConnectionName(e.target.value)}
-            />
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Connection Type</label>
-              <select
-                value={connectionType}
-                onChange={(e) =>
-                  setConnectionType(e.target.value as CraftConnectionType)
-                }
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="folders">Folders</option>
-                <option value="documents">Documents Only</option>
-                <option value="daily_notes">Daily Notes</option>
-              </select>
-            </div>
-            <Input
-              type="url"
-              placeholder="https://connect.craft.do/links/..."
-              required
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-            <div className="relative">
-              <Input
-                type={showApiKey ? "text" : "password"}
-                placeholder="API Key (optional)"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="pr-10"
-              />
-              <Button
-                variant="ghost"
-                className="absolute right-0 top-0 bottom-0 h-full"
-                size="icon"
-                onClick={() => setShowApiKey(!showApiKey)}
-              >
-                {showApiKey ? (
-                  <Eye className="w-4 h-4" />
-                ) : (
-                  <EyeOff className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-            <Button onClick={handleAddConnection}>Add</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={isEditConnectionDialogOpen}
         onOpenChange={(open) => {
-          setIsEditConnectionDialogOpen(open);
+          setIsAddConnectionDialogOpen(open);
           if (!open) {
-            setEditingConnection(null);
-            setUrl("");
-            setConnectionName("");
-            setConnectionType("folders");
-            setApiKey("");
+            resetForm();
           }
         }}
       >
         <DialogContent>
           <DialogHeader>
+            <DialogTitle>Add connection</DialogTitle>
+          </DialogHeader>
+          <ConnectionForm
+            connectionName={connectionName}
+            setConnectionName={setConnectionName}
+            connectionType={connectionType}
+            setConnectionType={setConnectionType}
+            url={url}
+            setUrl={setUrl}
+            apiKey={apiKey}
+            setApiKey={setApiKey}
+            showApiKey={showApiKey}
+            setShowApiKey={setShowApiKey}
+            onSubmit={handleAddConnection}
+            submitLabel="Add"
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isEditConnectionDialogOpen}
+        onOpenChange={handleCloseEditDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
             <DialogTitle>Edit connection</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <Input
-              type="text"
-              placeholder="Connection name (optional, but helpful 😉)"
-              required
-              value={connectionName}
-              onChange={(e) => setConnectionName(e.target.value)}
-            />
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Connection Type</label>
-              <select
-                value={connectionType}
-                onChange={(e) =>
-                  setConnectionType(e.target.value as CraftConnectionType)
-                }
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="folders">Folders</option>
-                <option value="documents">Documents Only</option>
-                <option value="daily_notes">Daily Notes</option>
-              </select>
-            </div>
-            <Input
-              type="url"
-              placeholder="https://connect.craft.do/links/..."
-              required
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-            <div className="relative">
-              <Input
-                type={showApiKey ? "text" : "password"}
-                placeholder="API Key (optional)"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="pr-10"
-              />
-              <Button
-                variant="ghost"
-                className="absolute right-0 top-0 bottom-0 h-full"
-                size="icon"
-                onClick={() => setShowApiKey(!showApiKey)}
-              >
-                {showApiKey ? (
-                  <Eye className="w-4 h-4" />
-                ) : (
-                  <EyeOff className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-            <Button onClick={handleUpdateConnection}>Update</Button>
-          </div>
+          <ConnectionForm
+            connectionName={connectionName}
+            setConnectionName={setConnectionName}
+            connectionType={connectionType}
+            setConnectionType={setConnectionType}
+            url={url}
+            setUrl={setUrl}
+            apiKey={apiKey}
+            setApiKey={setApiKey}
+            showApiKey={showApiKey}
+            setShowApiKey={setShowApiKey}
+            onSubmit={handleUpdateConnection}
+            submitLabel="Update"
+          />
         </DialogContent>
       </Dialog>
 

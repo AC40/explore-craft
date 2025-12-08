@@ -24,43 +24,48 @@ import { use } from "react";
 import { CopyIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { findFolder } from "@/lib/utils";
 import { AppFooter } from "@/components/app-footer";
 
-export default function FolderPage({
+const scopeLabels: Record<string, string> = {
+  active: "Active",
+  upcoming: "Upcoming",
+  inbox: "Inbox",
+  logbook: "Logbook",
+};
+
+export default function TasksPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ scope: string }>;
 }) {
   const { activeConnection } = useCraft();
   const router = useRouter();
-  const { id } = use(params);
+  const { scope } = use(params);
 
-  const { data: folder, isLoading } = useQuery({
-    queryKey: [activeConnection?.id, "folders", id],
+  const { data: tasks, isLoading } = useQuery({
+    queryKey: [activeConnection?.id, "tasks", scope],
     queryFn: async () => {
-      if (!activeConnection) return null;
-      const folders = await craftAPI.getFolders(activeConnection);
-      return findFolder(folders, id);
-    },
-    enabled: !!activeConnection?.id && !!id,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 24 * 60 * 60 * 1000, // 24 hours
-  });
-
-  console.log(folder);
-
-  const { data: documents } = useQuery({
-    queryKey: [activeConnection?.id, "documents", id],
-    queryFn: () => {
       if (!activeConnection) return [];
-      return craftAPI.getDocuments(activeConnection, undefined, id);
+      if (
+        scope !== "active" &&
+        scope !== "upcoming" &&
+        scope !== "inbox" &&
+        scope !== "logbook"
+      ) {
+        return [];
+      }
+      return craftAPI.getTasks(activeConnection, scope);
     },
-    enabled: !!activeConnection?.id && !!id,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    enabled:
+      !!activeConnection?.id &&
+      !!scope &&
+      (scope === "active" ||
+        scope === "upcoming" ||
+        scope === "inbox" ||
+        scope === "logbook"),
+    staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 24 * 60 * 60 * 1000, // 24 hours
   });
-  console.log(documents);
 
   useEffect(() => {
     if (!activeConnection) {
@@ -71,6 +76,8 @@ export default function FolderPage({
   if (!activeConnection) {
     return null;
   }
+
+  const scopeLabel = scopeLabels[scope] || scope;
 
   return (
     <SidebarProvider>
@@ -83,13 +90,11 @@ export default function FolderPage({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/view">Folders</BreadcrumbLink>
+                  <BreadcrumbLink href="/view">Tasks</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {isLoading ? "Loading..." : folder?.name || "Folder"}
-                  </BreadcrumbPage>
+                  <BreadcrumbPage>{scopeLabel}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -98,72 +103,63 @@ export default function FolderPage({
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
-              <p className="text-muted-foreground">Loading folder...</p>
+              <p className="text-muted-foreground">Loading tasks...</p>
             </div>
-          ) : folder ? (
+          ) : (
             <>
-              <div className="space-y-2 ">
-                <h1 className="text-2xl font-semibold">{folder.name}</h1>
-                <div className="bg-primary/10 rounded-lg p-4">
-                  <p className="flex items-center gap-2">
-                    ID: {folder.id}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        toast.success("Copied to clipboard");
-                        navigator.clipboard.writeText(folder.id);
-                      }}
-                    >
-                      <CopyIcon className="w-4 h-4" />
-                    </Button>
+              <div className="space-y-2">
+                <h1 className="text-2xl font-semibold">{scopeLabel} Tasks</h1>
+                {tasks && tasks.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {tasks.length} task{tasks.length !== 1 ? "s" : ""}
                   </p>
-                  {documents && documents.length > 0 && (
-                    <p className="">
-                      {documents.length} document
-                      {documents.length !== 1 ? "s" : ""}
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
               <div className="grid auto-rows-min gap-4 md:grid-cols-1">
-                {documents?.map((document) => (
-                  <div key={document.id} className="border rounded-lg p-4">
-                    <div className="pb-0">
-                      <div className="flex justify-between">
-                        <strong>{document.title}</strong>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="flex items-center gap-2">
-                        {document.id}
+                {tasks?.map((task) => (
+                  <div key={task.id} className="border rounded-lg p-4">
+                    <div className="pb-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1">
+                          <p className="font-medium">{task.markdown}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                            <span className="capitalize">{task.state}</span>
+                            {task.scheduleDate && (
+                              <span>Scheduled: {task.scheduleDate}</span>
+                            )}
+                            {task.deadlineDate && (
+                              <span>Deadline: {task.deadlineDate}</span>
+                            )}
+                          </div>
+                        </div>
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => {
                             toast.success("Copied to clipboard");
-                            navigator.clipboard.writeText(document.id);
+                            navigator.clipboard.writeText(task.id);
                           }}
                         >
                           <CopyIcon className="w-4 h-4" />
                         </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {task.id}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
-              {documents && documents.length === 0 && (
+              {tasks && tasks.length === 0 && (
                 <div className="flex items-center justify-center p-8">
                   <p className="text-muted-foreground">
-                    No documents in this folder
+                    No tasks in {scopeLabel.toLowerCase()}
                   </p>
                 </div>
               )}
             </>
-          ) : (
-            <div className="flex items-center justify-center p-8">
-              <p className="text-muted-foreground">Folder not found</p>
-            </div>
           )}
         </div>
         <AppFooter />

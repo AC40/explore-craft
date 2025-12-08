@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   ChevronRight,
   CopyIcon,
@@ -40,8 +41,10 @@ interface NavFolderItemProps {
 
 export function NavFolderItem({ folder, connection }: NavFolderItemProps) {
   const { isMobile } = useSidebar();
+  const pathname = usePathname();
   const { isExpanded, setExpanded } = useFolderExpansion();
   const isOpen = isExpanded(folder.id, true);
+  const isActive = pathname === `/view/folder/${folder.id}`;
 
   return (
     <Collapsible
@@ -51,7 +54,7 @@ export function NavFolderItem({ folder, connection }: NavFolderItemProps) {
       className="group/collapsible"
     >
       <SidebarMenuItem>
-        <SidebarMenuButton tooltip={folder.name} asChild>
+        <SidebarMenuButton tooltip={folder.name} asChild isActive={isActive}>
           <Link href={`/view/folder/${folder.id}`}>
             <Folder />
             <span>{folder.name}</span>

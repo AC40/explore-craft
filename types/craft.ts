@@ -10,6 +10,14 @@ export type CraftDocument = {
   title: string;
 };
 
+export type CraftTask = {
+  id: string;
+  markdown: string;
+  state: string;
+  scheduleDate?: string;
+  deadlineDate?: string;
+};
+
 export type CraftConnectionType = "folders" | "documents" | "daily_notes";
 
 export type CraftConnection = {

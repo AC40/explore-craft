@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronRight, Folder, File } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -25,13 +26,16 @@ interface FolderTreeProps {
 }
 
 export function FolderTree({ connection, item }: FolderTreeProps) {
+  const pathname = usePathname();
+
   if (!item) {
     return null;
   }
 
   if (!isFolder(item)) {
+    const isActive = pathname === item.id;
     return (
-      <SidebarMenuButton asChild>
+      <SidebarMenuButton asChild isActive={isActive}>
         <Link href={item.id}>
           <File />
           <span>{item.title}</span>
@@ -49,9 +53,11 @@ interface FolderTreeItemProps {
 }
 
 function FolderTreeItem({ connection, folder }: FolderTreeItemProps) {
+  const pathname = usePathname();
   const { isExpanded, setExpanded } = useFolderExpansion();
   const defaultOpen = folder.name === "components" || folder.name === "ui";
   const isOpen = isExpanded(folder.id, defaultOpen);
+  const isActive = pathname === `/view/folder/${folder.id}`;
 
   return (
     <SidebarMenuItem>
@@ -60,7 +66,7 @@ function FolderTreeItem({ connection, folder }: FolderTreeItemProps) {
         open={isOpen}
         onOpenChange={(open) => setExpanded(folder.id, open)}
       >
-        <SidebarMenuButton tooltip={folder.name} asChild>
+        <SidebarMenuButton tooltip={folder.name} asChild isActive={isActive}>
           <Link href={`/view/folder/${folder.id}`}>
             <span>{folder.name}</span>
           </Link>
