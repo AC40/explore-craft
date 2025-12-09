@@ -19,19 +19,9 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useCraft } from "@/hooks/use-craft";
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
-export default function Page() {
+export default function AboutPage() {
   const { connections } = useCraft();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
   return (
     <div className="min-h-screen bg-background">
       {connections.length > 0 && (
@@ -115,10 +105,7 @@ export default function Page() {
 
             <div className="space-y-12">
               <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div
-                  className="relative aspect-video rounded-lg border bg-muted overflow-hidden order-2 md:order-1 cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setSelectedImage("/img/get-document-ids.png")}
-                >
+                <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden order-2 md:order-1">
                   <Image
                     src="/img/get-document-ids.png"
                     alt="Document Management - Viewing and copying document IDs"
@@ -148,15 +135,12 @@ export default function Page() {
                     <h3 className="text-2xl font-semibold">Document Content</h3>
                   </div>
                   <p className="text-muted-foreground">
-                    View document blocks and content in a structured format.
-                    Switch between block view and raw JSON, copy block IDs, and
-                    explore your document structure.
+                    View document content and copy block IDs. Switch between
+                    block view and raw JSON to explore your document structure
+                    and quickly access IDs.
                   </p>
                 </div>
-                <div
-                  className="relative aspect-video rounded-lg border bg-muted overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setSelectedImage("/img/view-doc-content.png")}
-                >
+                <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden">
                   <Image
                     src="/img/view-doc-content.png"
                     alt="Document Content View - Viewing document blocks and content"
@@ -167,18 +151,7 @@ export default function Page() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div
-                  className="relative aspect-video rounded-lg border bg-muted overflow-hidden order-2 md:order-1 cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setSelectedImage("/img/tasks.png")}
-                >
-                  <Image
-                    src="/img/tasks.png"
-                    alt="Tasks View - Managing tasks and daily notes"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="space-y-4 order-1 md:order-2">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <CheckSquare2 className="h-6 w-6 text-primary" />
                     <h3 className="text-2xl font-semibold">
@@ -190,6 +163,14 @@ export default function Page() {
                     inbox, and logbook. View task details, schedules, and
                     deadlines all in one interface.
                   </p>
+                </div>
+                <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden">
+                  <Image
+                    src="/img/tasks.png"
+                    alt="Tasks View - Managing tasks and daily notes"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
               </div>
             </div>
@@ -261,31 +242,6 @@ export default function Page() {
           </div>
         </div>
       </div>
-
-      <Dialog
-        open={!!selectedImage}
-        onOpenChange={(open) => !open && setSelectedImage(null)}
-      >
-        <DialogContent className="max-w-5xl w-full p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>
-              Click outside or press Escape to close
-            </DialogDescription>
-          </DialogHeader>
-          {selectedImage && (
-            <div className="relative w-full aspect-video bg-muted">
-              <Image
-                src={selectedImage}
-                alt="Preview"
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

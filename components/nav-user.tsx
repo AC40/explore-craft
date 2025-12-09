@@ -92,13 +92,10 @@ export function NavUser() {
                   <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
                 <Link
-                  href="https://aaronrichter.tech"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/"
                   className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Explore more
-                  <ExternalLink className="h-3 w-3" />
+                  About this app
                 </Link>
               </div>
             </div>

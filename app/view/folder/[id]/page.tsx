@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { findFolder } from "@/lib/utils";
 import { AppFooter } from "@/components/app-footer";
+import { ApiInfo } from "@/components/api-info";
+import Link from "next/link";
 
 export default function FolderPage({
   params,
@@ -102,36 +104,51 @@ export default function FolderPage({
             </div>
           ) : folder ? (
             <>
-              <div className="space-y-2 ">
-                <h1 className="text-2xl font-semibold">{folder.name}</h1>
-                <div className="bg-primary/10 rounded-lg p-4">
-                  <p className="flex items-center gap-2">
-                    ID: {folder.id}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h1 className="text-2xl font-semibold">{folder.name}</h1>
+                  <div className="bg-primary/10 rounded-lg p-4">
+                    <p className="flex items-center gap-2">
+                      ID: {folder.id}
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => {
-                        toast.success("Copied to clipboard");
+                        toast.success("Folder ID copied");
                         navigator.clipboard.writeText(folder.id);
                       }}
                     >
                       <CopyIcon className="w-4 h-4" />
                     </Button>
-                  </p>
-                  {documents && documents.length > 0 && (
-                    <p className="">
-                      {documents.length} document
-                      {documents.length !== 1 ? "s" : ""}
                     </p>
-                  )}
+                    {documents && documents.length > 0 && (
+                      <p className="">
+                        {documents.length} document
+                        {documents.length !== 1 ? "s" : ""}
+                      </p>
+                    )}
+                  </div>
                 </div>
+                <ApiInfo
+                  connection={activeConnection}
+                  endpoint="documents"
+                  description="Fetch documents in this folder"
+                  queryParams={{ folderId: folder.id }}
+                />
               </div>
               <div className="grid auto-rows-min gap-4 md:grid-cols-1">
                 {documents?.map((document) => (
                   <div key={document.id} className="border rounded-lg p-4">
                     <div className="pb-0">
                       <div className="flex justify-between">
-                        <strong>{document.title}</strong>
+                        <strong>
+                          <Link
+                            href={`/view/document/${document.id}`}
+                            className="hover:underline"
+                          >
+                            {document.title}
+                          </Link>
+                        </strong>
                       </div>
                     </div>
                     <div>
@@ -141,7 +158,7 @@ export default function FolderPage({
                           variant="outline"
                           size="icon"
                           onClick={() => {
-                            toast.success("Copied to clipboard");
+                            toast.success("Document ID copied");
                             navigator.clipboard.writeText(document.id);
                           }}
                         >

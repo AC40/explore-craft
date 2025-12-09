@@ -66,6 +66,22 @@ class CraftAPI {
     return data.items as CraftTask[];
   }
 
+  async getBlocks(connection: CraftConnection, documentId: string) {
+    const queryParams = new URLSearchParams();
+    queryParams.set("id", documentId);
+    const response = await fetch(
+      this.constructUrl(connection, "blocks", queryParams),
+      {
+        headers: this.constructHeaders(connection),
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch blocks: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  }
+
   constructUrl(
     connection: CraftConnection,
     path: string,

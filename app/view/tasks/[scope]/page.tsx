@@ -25,6 +25,7 @@ import { CopyIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { AppFooter } from "@/components/app-footer";
+import { ApiInfo } from "@/components/api-info";
 
 const scopeLabels: Record<string, string> = {
   active: "Active",
@@ -107,13 +108,21 @@ export default function TasksPage({
             </div>
           ) : (
             <>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold">{scopeLabel} Tasks</h1>
-                {tasks && tasks.length > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    {tasks.length} task{tasks.length !== 1 ? "s" : ""}
-                  </p>
-                )}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h1 className="text-2xl font-semibold">{scopeLabel} Tasks</h1>
+                  {tasks && tasks.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {tasks.length} task{tasks.length !== 1 ? "s" : ""}
+                    </p>
+                  )}
+                </div>
+                <ApiInfo
+                  connection={activeConnection}
+                  endpoint="tasks"
+                  description={`Fetch ${scopeLabel.toLowerCase()} tasks`}
+                  queryParams={{ scope }}
+                />
               </div>
               <div className="grid auto-rows-min gap-4 md:grid-cols-1">
                 {tasks?.map((task) => (
@@ -136,7 +145,7 @@ export default function TasksPage({
                           variant="outline"
                           size="icon"
                           onClick={() => {
-                            toast.success("Copied to clipboard");
+                            toast.success("Task ID copied");
                             navigator.clipboard.writeText(task.id);
                           }}
                         >

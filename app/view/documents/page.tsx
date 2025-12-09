@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
 import { AppFooter } from "@/components/app-footer";
+import { ApiInfo } from "@/components/api-info";
 
 export default function DocumentsPage() {
   const { activeConnection } = useCraft();
@@ -75,16 +76,23 @@ export default function DocumentsPage() {
             </div>
           ) : (
             <>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold">Documents</h1>
-                {documents && documents.length > 0 && (
-                  <div className="bg-primary/10 rounded-lg p-4">
-                    <p className="">
-                      {documents.length} document
-                      {documents.length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                )}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h1 className="text-2xl font-semibold">Documents</h1>
+                  {documents && documents.length > 0 && (
+                    <div className="bg-primary/10 rounded-lg p-4">
+                      <p className="">
+                        {documents.length} document
+                        {documents.length !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <ApiInfo
+                  connection={activeConnection}
+                  endpoint="documents"
+                  description="Fetch all selected documents"
+                />
               </div>
               <div className="grid auto-rows-min gap-4 md:grid-cols-1">
                 {documents?.map((document) => (
@@ -93,9 +101,7 @@ export default function DocumentsPage() {
                       <div className="flex justify-between">
                         <strong>
                           <Link
-                            href={document.id}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href={`/view/document/${document.id}`}
                             className="hover:underline"
                           >
                             {document.title}
@@ -110,7 +116,7 @@ export default function DocumentsPage() {
                           variant="outline"
                           size="icon"
                           onClick={() => {
-                            toast.success("Copied to clipboard");
+                            toast.success("Document ID copied");
                             navigator.clipboard.writeText(document.id);
                           }}
                         >
