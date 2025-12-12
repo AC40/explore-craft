@@ -25,10 +25,10 @@ export default function Page() {
   const { connections, activeConnection } = useCraft();
   const router = useRouter();
 
-  // Redirect to new connection page if no connections exist
+  // Redirect to home if no connections exist
   useEffect(() => {
     if (connections.length === 0) {
-      router.push("/new");
+      router.push("/");
     }
   }, [connections.length, router]);
 

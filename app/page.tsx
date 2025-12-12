@@ -1,291 +1,201 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Shield,
-  Zap,
-  FolderTree,
-  CheckSquare2,
-  FileText,
-  ArrowRight,
-} from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useCraft } from "@/hooks/use-craft";
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { CraftConnectionType } from "@/types/craft";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const { connections } = useCraft();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { connections, setConnections, setActiveConnection, activeConnection } =
+    useCraft();
+  const router = useRouter();
+  const [url, setUrl] = useState("");
+  const [connectionName, setConnectionName] = useState("");
+  const [connectionType, setConnectionType] =
+    useState<CraftConnectionType>("folders");
+  const [apiKey, setApiKey] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
+
+  // Redirect to dashboard if connections exist
+  useEffect(() => {
+    if (connections.length > 0) {
+      if (activeConnection) {
+        // Redirect based on connection type
+        if (activeConnection.type === "documents") {
+          router.push("/view/documents");
+        } else if (activeConnection.type === "daily_notes") {
+          router.push("/view/tasks/active");
+        } else {
+          router.push("/view");
+        }
+      } else {
+        router.push("/view");
+      }
+    }
+  }, [connections, activeConnection, router]);
+
+  const handleAddConnection = async () => {
+    if (!url) {
+      toast.error("URL is required");
+      return;
+    }
+
+    const checkConnection = async () => {
+      const headers = new Headers();
+      if (apiKey) {
+        headers.set("Authorization", `Bearer ${apiKey}`);
+      }
+
+      // Check different endpoints based on connection type
+      let endpoint = "/collections";
+      if (connectionType === "documents") {
+        endpoint = "/documents";
+      } else if (connectionType === "daily_notes") {
+        endpoint = "/documents?location=daily_notes";
+      }
+
+      const checkConnection = await fetch(url + endpoint, { headers });
+
+      // 304 (Not Modified) is a success status
+      if (!checkConnection.ok && checkConnection.status !== 304) {
+        let errorMessage = "Failed to connect to Craft.";
+
+        if (checkConnection.status === 401) {
+          errorMessage += " Please check if the API key is correct.";
+        }
+        if (checkConnection.status === 404) {
+          errorMessage += " Please check if the URL is correct.";
+        }
+        if (checkConnection.status === 500) {
+          errorMessage += " Internal server error.";
+        }
+
+        if (!apiKey) {
+          errorMessage += " Did you maybe forget to add the API key?";
+        }
+
+        toast.error(errorMessage);
+        return false;
+      }
+
+      return true;
+    };
+
+    const success = await checkConnection();
+    if (!success) {
+      return;
+    }
+
+    let finalConnectionName = connectionName;
+    if (!finalConnectionName) {
+      const match = url.match(/\/links\/([^\/]+)/);
+      finalConnectionName = match?.[1] || new URL(url).hostname;
+    }
+
+    const newConnection = {
+      id: crypto.randomUUID(),
+      name: finalConnectionName,
+      url,
+      apiKey,
+      type: connectionType,
+    };
+
+    setConnections([...connections, newConnection]);
+    setActiveConnection(newConnection);
+    toast.success("Connection added successfully");
+
+    // Navigate to the appropriate view based on connection type
+    if (connectionType === "documents") {
+      router.push("/view/documents");
+    } else if (connectionType === "daily_notes") {
+      router.push("/view/tasks/active");
+    } else {
+      router.push("/view");
+    }
+  };
+
+  // Don't redirect if connections exist - allow access to landing page
 
   return (
-    <div className="min-h-screen bg-background">
-      {connections.length > 0 && (
-        <div className="container mx-auto px-4 pt-4">
-          <div className="flex justify-end">
-            <Button asChild variant="outline">
-              <Link href="/view">Go to Exploration View</Link>
-            </Button>
-          </div>
-        </div>
-      )}
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto space-y-16">
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight">
-              Explore Craft API
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get document IDs quickly. A local-first browser application to
-              explore your Craft workspace through the Craft API. Everything
-              runs in your browser—no data ever leaves your device.
-            </p>
-            <div className="flex gap-4 justify-center pt-4">
-              <Button asChild size="lg">
-                <Link href="/new">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+    <div className="w-full min-h-screen flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader>
+              <CardTitle>View your Craft Space</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <Input
+                type="text"
+                placeholder="Connection name (optional, but helpful 😉)"
+                value={connectionName}
+                onChange={(e) => setConnectionName(e.target.value)}
+              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Connection Type</label>
+                <select
+                  value={connectionType}
+                  onChange={(e) =>
+                    setConnectionType(e.target.value as CraftConnectionType)
+                  }
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="folders">All Documents (Space)</option>
+                  <option value="documents">Selected Documents</option>
+                  <option value="daily_notes">Daily Notes & Tasks</option>
+                </select>
+              </div>
+              <Input
+                type="url"
+                placeholder="https://connect.craft.do/links/..."
+                required
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+              />
+              <div className="relative">
+                <Input
+                  type={showApiKey ? "text" : "password"}
+                  placeholder="API Key (optional)"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="pr-10"
+                />
+                <Button
+                  variant="ghost"
+                  className="absolute right-0 top-0 bottom-0 h-full"
+                  size="icon"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                >
+                  {showApiKey ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <Button onClick={handleAddConnection} className="w-full">
+                View
               </Button>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <Shield className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>100% Local</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  All data processing happens in your browser. No server, no
-                  cloud, no data collection.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Zap className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>Fast & Responsive</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Aggressive caching keeps everything snappy. Your data persists
-                  across sessions.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <FolderTree className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>Full Workspace Access</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Browse folders, documents, and tasks. Quickly find and copy
-                  IDs from anywhere in your Craft space.
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-8">
-            <div className="text-center space-y-2">
-              <h2 className="text-3xl font-bold">Features</h2>
-              <p className="text-muted-foreground">
-                Quickly find and copy document IDs from your Craft workspace
-              </p>
-            </div>
-
-            <div className="space-y-12">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div
-                  className="relative aspect-video rounded-lg border bg-muted overflow-hidden order-2 md:order-1 cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setSelectedImage("/img/get-document-ids.png")}
-                >
-                  <Image
-                    src="/img/get-document-ids.png"
-                    alt="Document Management - Viewing and copying document IDs"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="space-y-4 order-1 md:order-2">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-6 w-6 text-primary" />
-                    <h3 className="text-2xl font-semibold">
-                      Document Management
-                    </h3>
-                  </div>
-                  <p className="text-muted-foreground">
-                    Quickly find and copy document IDs from your Craft
-                    workspace. View all your documents in one place, browse
-                    through folders, and copy IDs with a single click.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-6 w-6 text-primary" />
-                    <h3 className="text-2xl font-semibold">Document Content</h3>
-                  </div>
-                  <p className="text-muted-foreground">
-                    View document blocks and content in a structured format.
-                    Switch between block view and raw JSON, copy block IDs, and
-                    explore your document structure.
-                  </p>
-                </div>
-                <div
-                  className="relative aspect-video rounded-lg border bg-muted overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setSelectedImage("/img/view-doc-content.png")}
-                >
-                  <Image
-                    src="/img/view-doc-content.png"
-                    alt="Document Content View - Viewing document blocks and content"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div
-                  className="relative aspect-video rounded-lg border bg-muted overflow-hidden order-2 md:order-1 cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setSelectedImage("/img/tasks.png")}
-                >
-                  <Image
-                    src="/img/tasks.png"
-                    alt="Tasks View - Managing tasks and daily notes"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="space-y-4 order-1 md:order-2">
-                  <div className="flex items-center gap-2">
-                    <CheckSquare2 className="h-6 w-6 text-primary" />
-                    <h3 className="text-2xl font-semibold">
-                      Tasks & Daily Notes
-                    </h3>
-                  </div>
-                  <p className="text-muted-foreground">
-                    Manage your tasks across different scopes: active, upcoming,
-                    inbox, and logbook. View task details, schedules, and
-                    deadlines all in one interface.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t pt-12 space-y-6">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold">How It Works</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Connect to your Craft space using the Craft API. All connections
-                are stored locally in your browser. No account required, no data
-                collection.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <div className="text-2xl font-bold text-primary mb-2">1</div>
-                  <CardTitle>Connect</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <CardDescription>
-                    Add your Craft space URL and optional API key. Choose from
-                    folders, documents, or tasks.
-                  </CardDescription>{" "}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <div className="text-2xl font-bold text-primary mb-2">2</div>
-                  <CardTitle>Explore</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Navigate your workspace through the sidebar. Browse folders,
-                    view documents, and quickly copy IDs as you explore.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <div className="text-2xl font-bold text-primary mb-2">3</div>
-                  <CardTitle>Stay Local</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Everything is cached locally for fast access. Your data
-                    never leaves your browser.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          <div className="border-t pt-12 text-center space-y-4">
-            <h2 className="text-3xl font-bold">Ready to Get Started?</h2>
-            <p className="text-muted-foreground">
-              Connect to your Craft workspace and start exploring
-            </p>
-            <Button asChild size="lg">
-              <Link href="/new">
-                Connect Your Space
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      <Dialog
-        open={!!selectedImage}
-        onOpenChange={(open) => !open && setSelectedImage(null)}
-      >
-        <DialogContent className="max-w-5xl w-full p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>
-              Click outside or press Escape to close
-            </DialogDescription>
-          </DialogHeader>
-          {selectedImage && (
-            <div className="relative w-full aspect-video bg-muted">
-              <Image
-                src={selectedImage}
-                alt="Preview"
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <div className="border-t py-4">
+        <div className="container mx-auto px-4 text-center">
+          <Link
+            href="/about"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Learn more about this app
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

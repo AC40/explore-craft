@@ -42,7 +42,7 @@ export const metadata: Metadata = {
       "Get document IDs quickly. A local-first browser application to explore your Craft workspace through the Craft API. Everything runs in your browser—no data ever leaves your device.",
     images: [
       {
-        url: "/img/get-document-ids.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Explore Craft API - Document Management",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: "Explore Craft API - Get Document IDs Quickly",
     description:
       "Get document IDs quickly. A local-first browser application to explore your Craft workspace through the Craft API.",
-    images: ["/img/get-document-ids.png"],
+    images: ["/og-image.png"],
     creator: "@aaronrichter",
   },
   robots: {
@@ -73,8 +73,8 @@ export const metadata: Metadata = {
   },
   category: "productivity",
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: "/fav.png",
+    apple: "/fav.png",
   },
 };
 

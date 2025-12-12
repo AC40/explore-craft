@@ -18,21 +18,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCraft } from "@/hooks/use-craft";
 
 export default function AboutPage() {
-  const { connections } = useCraft();
   return (
     <div className="min-h-screen bg-background">
-      {connections.length > 0 && (
-        <div className="container mx-auto px-4 pt-4">
-          <div className="flex justify-end">
-            <Button asChild variant="outline">
-              <Link href="/view">Go to Exploration View</Link>
-            </Button>
-          </div>
-        </div>
-      )}
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto space-y-16">
           <div className="text-center space-y-4">
@@ -40,13 +29,13 @@ export default function AboutPage() {
               Explore Craft API
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get document IDs quickly. A local-first browser application to
-              explore your Craft workspace through the Craft API. Everything
-              runs in your browser—no data ever leaves your device.
+              A local-first browser application to explore and navigate your
+              Craft workspace through the Craft API. Everything runs in your
+              browser—no data ever leaves your device.
             </p>
             <div className="flex gap-4 justify-center pt-4">
               <Button asChild size="lg">
-                <Link href="/new">
+                <Link href="/">
                   Get Started
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -88,8 +77,8 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Browse folders, documents, and tasks. Quickly find and copy
-                  IDs from anywhere in your Craft space.
+                  Browse folders, documents, and tasks. Navigate your entire
+                  Craft space with ease.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -99,7 +88,7 @@ export default function AboutPage() {
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-bold">Features</h2>
               <p className="text-muted-foreground">
-                Quickly find and copy document IDs from your Craft workspace
+                Everything you need to explore your Craft workspace
               </p>
             </div>
 
@@ -121,9 +110,9 @@ export default function AboutPage() {
                     </h3>
                   </div>
                   <p className="text-muted-foreground">
-                    Quickly find and copy document IDs from your Craft
-                    workspace. View all your documents in one place, browse
-                    through folders, and copy IDs with a single click.
+                    View all your documents in one place. Access selected
+                    documents or browse through your entire space. Copy document
+                    IDs with a single click.
                   </p>
                 </div>
               </div>
@@ -135,9 +124,9 @@ export default function AboutPage() {
                     <h3 className="text-2xl font-semibold">Document Content</h3>
                   </div>
                   <p className="text-muted-foreground">
-                    View document content and copy block IDs. Switch between
-                    block view and raw JSON to explore your document structure
-                    and quickly access IDs.
+                    View document blocks and content in a structured format.
+                    Switch between block view and raw JSON, copy block IDs, and
+                    explore your document structure.
                   </p>
                 </div>
                 <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden">
@@ -196,7 +185,15 @@ export default function AboutPage() {
                   <CardDescription>
                     Add your Craft space URL and optional API key. Choose from
                     folders, documents, or tasks.
-                  </CardDescription>{" "}
+                  </CardDescription>
+                  <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden">
+                    <Image
+                      src="/img/manage-connections.png"
+                      alt="Manage Connections - Adding and configuring Craft connections"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -208,7 +205,7 @@ export default function AboutPage() {
                 <CardContent>
                   <CardDescription>
                     Navigate your workspace through the sidebar. Browse folders,
-                    view documents, and quickly copy IDs as you explore.
+                    view documents, and manage tasks.
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -234,7 +231,7 @@ export default function AboutPage() {
               Connect to your Craft workspace and start exploring
             </p>
             <Button asChild size="lg">
-              <Link href="/new">
+              <Link href="/">
                 Connect Your Space
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

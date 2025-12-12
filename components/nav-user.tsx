@@ -92,7 +92,7 @@ export function NavUser() {
                   <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
                 <Link
-                  href="/"
+                  href="/about"
                   className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   About this app
