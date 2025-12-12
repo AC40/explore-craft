@@ -47,43 +47,34 @@ export default function Page() {
     }
 
     const checkConnection = async () => {
-      const headers = new Headers();
-      if (apiKey) {
-        headers.set("Authorization", `Bearer ${apiKey}`);
-      }
+      const res = await fetch("/api/craft/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiUrl: url,
+          apiKey,
+          type: connectionType,
+        }),
+      });
 
-      // Check different endpoints based on connection type
-      let endpoint = "/collections";
-      if (connectionType === "documents") {
-        endpoint = "/documents";
-      } else if (connectionType === "daily_notes") {
-        endpoint = "/documents?location=daily_notes";
-      }
-
-      const checkConnection = await fetch(url + endpoint, { headers });
-
-      // 304 (Not Modified) is a success status
-      if (!checkConnection.ok && checkConnection.status !== 304) {
+      const data = await res.json();
+      if (!data.ok) {
         let errorMessage = "Failed to connect to Craft.";
-
-        if (checkConnection.status === 401) {
+        if (data.status === 401) {
           errorMessage += " Please check if the API key is correct.";
         }
-        if (checkConnection.status === 404) {
+        if (data.status === 404) {
           errorMessage += " Please check if the URL is correct.";
         }
-        if (checkConnection.status === 500) {
+        if (data.status === 500) {
           errorMessage += " Internal server error.";
         }
-
         if (!apiKey) {
           errorMessage += " Did you maybe forget to add the API key?";
         }
-
         toast.error(errorMessage);
         return false;
       }
-
       return true;
     };
 
@@ -91,6 +82,19 @@ export default function Page() {
     if (!success) {
       return;
     }
+
+    const encryptRes = await fetch("/api/encrypt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiUrl: url, apiKey }),
+    });
+
+    if (!encryptRes.ok) {
+      toast.error("Failed to secure your API key. Please try again.");
+      return;
+    }
+
+    const { blob } = await encryptRes.json();
 
     let finalConnectionName = connectionName;
     if (!finalConnectionName) {
@@ -102,13 +106,13 @@ export default function Page() {
       id: crypto.randomUUID(),
       name: finalConnectionName,
       url,
-      apiKey,
+      encryptedBlob: blob,
       type: connectionType,
     };
 
     setConnections([...connections, newConnection]);
     setActiveConnection(newConnection);
-    toast.success("Connection added successfully");
+    toast.success("Connection added securely");
 
     // Navigate to the appropriate view based on connection type
     if (connectionType === "documents") {

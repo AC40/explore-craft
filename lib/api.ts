@@ -5,6 +5,21 @@ import {
   CraftTask,
 } from "@/types/craft";
 
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(
+      `Request failed: ${response.status} ${text || response.statusText}`
+    );
+  }
+  return response.json() as Promise<T>;
+}
+
 class CraftAPI {
   async getDocuments(
     connection: CraftConnection,
@@ -12,88 +27,44 @@ class CraftAPI {
     folderId?: string,
     fetchMetadata: boolean = false
   ) {
-    const queryParams = new URLSearchParams();
-    if (location) {
-      queryParams.set("location", location);
-    }
-    if (folderId) {
-      queryParams.set("folderId", folderId);
-    }
-    if (fetchMetadata) {
-      queryParams.set("fetchMetadata", "true");
-    }
-    const response = await fetch(
-      this.constructUrl(connection, "documents", queryParams),
+    const data = await postJson<{ items: CraftDocument[] }>(
+      "/api/craft/documents",
       {
-        headers: this.constructHeaders(connection),
+        blob: connection.encryptedBlob,
+        location,
+        folderId,
+        fetchMetadata,
       }
     );
-    if (!response.ok) {
-      throw new Error(`Failed to fetch documents: ${response.statusText}`);
-    }
-    const data = await response.json();
-    console.log(data);
-    return data.items as CraftDocument[];
+    return data.items;
   }
 
   async getFolders(connection: CraftConnection) {
-    const response = await fetch(this.constructUrl(connection, "folders"), {
-      headers: this.constructHeaders(connection),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to fetch folders: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return data.items as CraftFolder[];
+    const data = await postJson<{ items: CraftFolder[] }>(
+      "/api/craft/folders",
+      {
+        blob: connection.encryptedBlob,
+      }
+    );
+    return data.items;
   }
 
   async getTasks(
     connection: CraftConnection,
     scope: "active" | "upcoming" | "inbox" | "logbook"
   ) {
-    const queryParams = new URLSearchParams();
-    queryParams.set("scope", scope);
-    const response = await fetch(
-      this.constructUrl(connection, "tasks", queryParams),
-      {
-        headers: this.constructHeaders(connection),
-      }
-    );
-    if (!response.ok) {
-      throw new Error(`Failed to fetch tasks: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return data.items as CraftTask[];
+    const data = await postJson<{ items: CraftTask[] }>("/api/craft/tasks", {
+      blob: connection.encryptedBlob,
+      scope,
+    });
+    return data.items;
   }
 
   async getBlocks(connection: CraftConnection, documentId: string) {
-    const queryParams = new URLSearchParams();
-    queryParams.set("id", documentId);
-    const response = await fetch(
-      this.constructUrl(connection, "blocks", queryParams),
-      {
-        headers: this.constructHeaders(connection),
-      }
-    );
-    if (!response.ok) {
-      throw new Error(`Failed to fetch blocks: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return data;
-  }
-
-  constructUrl(
-    connection: CraftConnection,
-    path: string,
-    queryParams?: URLSearchParams
-  ) {
-    return `${connection.url}/${path}?${queryParams?.toString()}`;
-  }
-
-  constructHeaders(connection: CraftConnection) {
-    return {
-      Authorization: `Bearer ${connection.apiKey}`,
-    };
+    return postJson("/api/craft/blocks", {
+      blob: connection.encryptedBlob,
+      id: documentId,
+    });
   }
 }
 

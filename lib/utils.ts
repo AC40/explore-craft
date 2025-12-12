@@ -50,22 +50,21 @@ export async function validateConnection(
   apiKey: string | undefined,
   type: CraftConnectionType
 ): Promise<{ success: boolean; error?: string }> {
-  const headers = new Headers();
-  if (apiKey) {
-    headers.set("Authorization", `Bearer ${apiKey}`);
-  }
+  const res = await fetch("/api/craft/test", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ apiUrl: url, apiKey, type }),
+  });
+  const data = await res.json();
 
-  const endpoint = getConnectionEndpoint(type);
-  const response = await fetch(url + endpoint, { headers });
-
-  if (!response.ok) {
+  if (!data.ok) {
     let errorMessage = "Failed to connect to Craft.";
 
-    if (response.status === 401) {
+    if (data.status === 401) {
       errorMessage += " Please check if the API key is correct.";
-    } else if (response.status === 404) {
+    } else if (data.status === 404) {
       errorMessage += " Please check if the URL is correct.";
-    } else if (response.status === 500) {
+    } else if (data.status === 500) {
       errorMessage += " Internal server error.";
     }
 

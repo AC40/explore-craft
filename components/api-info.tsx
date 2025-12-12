@@ -33,29 +33,34 @@ export function ApiInfo({
   const queryString = queryParams
     ? new URLSearchParams(queryParams).toString()
     : "";
-  const fullUrl = `${connection.url}/${endpoint}${queryString ? `?${queryString}` : ""}`;
-  const headers = connection.apiKey
-    ? { Authorization: `Bearer ${connection.apiKey}` }
-    : {};
+  const fullUrl = `${connection.url}/${endpoint}${
+    queryString ? `?${queryString}` : ""
+  }`;
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied to clipboard`);
   };
 
-  const fetchCode = `fetch("${fullUrl}", {
-  method: "${method}",
+  const fetchCode = `fetch("/api/craft/${endpoint}", {
+  method: "POST",
   headers: {
-${connection.apiKey ? `    "Authorization": "Bearer ${connection.apiKey}",` : ""}
     "Content-Type": "application/json"
-  }
+  },
+  body: JSON.stringify({
+    blob: "${connection.encryptedBlob}",
+    ${queryString ? `// query: ${queryString}` : ""}
+  })
 })
   .then(response => response.json())
   .then(data => console.log(data))
   .catch(error => console.error("Error:", error));`;
 
-  const curlCode = `curl -X ${method} "${fullUrl}" \\
-${connection.apiKey ? `  -H "Authorization: Bearer ${connection.apiKey}" \\` : ""}  -H "Content-Type: application/json"`;
+  const curlCode = `curl -X POST "/api/craft/${endpoint}" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "blob": "${connection.encryptedBlob}"${
+    queryString ? `, "query": "${queryString}"` : ""
+  } }'`;
 
   return (
     <Card>
@@ -110,14 +115,12 @@ ${connection.apiKey ? `  -H "Authorization: Bearer ${connection.apiKey}" \\` : "
                 <CopyIcon className="h-4 w-4" />
               </Button>
             </div>
-            {connection.apiKey && (
-              <div className="text-xs text-muted-foreground">
-                <strong>Headers:</strong>
-                <div className="mt-1 bg-muted px-2 py-1 rounded">
-                  Authorization: Bearer {connection.apiKey.substring(0, 20)}...
-                </div>
+            <div className="text-xs text-muted-foreground">
+              <strong>Auth:</strong>
+              <div className="mt-1 bg-muted px-2 py-1 rounded">
+                Authorization handled server-side. API key never leaves the server.
               </div>
-            )}
+            </div>
           </div>
         )}
 
@@ -158,4 +161,3 @@ ${connection.apiKey ? `  -H "Authorization: Bearer ${connection.apiKey}" \\` : "
     </Card>
   );
 }
-

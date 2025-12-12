@@ -24,6 +24,6 @@ export type CraftConnection = {
   id: string;
   name: string;
   url: string;
-  apiKey?: string;
   type: CraftConnectionType;
+  encryptedBlob: string;
 };

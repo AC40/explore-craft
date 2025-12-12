@@ -67,12 +67,24 @@ export function ConnectionSwitcher({
       return;
     }
 
+    const encryptRes = await fetch("/api/encrypt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiUrl: url, apiKey }),
+    });
+
+    if (!encryptRes.ok) {
+      toast.error("Failed to secure your API key. Please try again.");
+      return;
+    }
+    const { blob } = await encryptRes.json();
+
     const newConnection: CraftConnection = {
       id: crypto.randomUUID(),
       name: extractConnectionName(url, connectionName),
       url,
-      apiKey,
       type: connectionType,
+      encryptedBlob: blob,
     };
 
     setConnections([...connections, newConnection]);
@@ -87,7 +99,7 @@ export function ConnectionSwitcher({
     setConnectionName(connection.name);
     setConnectionType(connection.type);
     setUrl(connection.url);
-    setApiKey(connection.apiKey || "");
+    setApiKey("");
     setIsEditConnectionDialogOpen(true);
   };
 
@@ -109,12 +121,24 @@ export function ConnectionSwitcher({
       return;
     }
 
+    const encryptRes = await fetch("/api/encrypt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiUrl: url, apiKey }),
+    });
+
+    if (!encryptRes.ok) {
+      toast.error("Failed to secure your API key. Please try again.");
+      return;
+    }
+    const { blob } = await encryptRes.json();
+
     const updatedConnection: CraftConnection = {
       ...editingConnection,
       name: extractConnectionName(url, connectionName),
       url,
-      apiKey,
       type: connectionType,
+      encryptedBlob: blob,
     };
 
     const updatedConnections = connections.map((c) =>
