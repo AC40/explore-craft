@@ -27,13 +27,7 @@ import { toast } from "sonner";
 import { AppFooter } from "@/components/app-footer";
 import { ApiInfo } from "@/components/api-info";
 import Link from "next/link";
-
-interface Block {
-  id: string;
-  type: string;
-  markdown: string;
-  [key: string]: unknown;
-}
+import { CraftBlock } from "@/types/craft";
 
 export default function DocumentPage({
   params,
@@ -69,9 +63,9 @@ export default function DocumentPage({
   const jsonString = blocks ? JSON.stringify(blocks, null, 2) : "";
   
   // Extract content array from blocks data
-  const contentBlocks: Block[] = blocks?.content && Array.isArray(blocks.content)
+  const contentBlocks: CraftBlock[] = blocks?.content && Array.isArray(blocks.content)
     ? blocks.content.filter(
-        (block: unknown): block is Block =>
+        (block: unknown): block is CraftBlock =>
           typeof block === "object" &&
           block !== null &&
           "id" in block &&

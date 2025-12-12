@@ -3,6 +3,7 @@ import {
   CraftDocument,
   CraftFolder,
   CraftTask,
+  CraftBlocksResponse,
 } from "@/types/craft";
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -61,7 +62,7 @@ class CraftAPI {
   }
 
   async getBlocks(connection: CraftConnection, documentId: string) {
-    return postJson("/api/craft/blocks", {
+    return postJson<CraftBlocksResponse>("/api/craft/blocks", {
       blob: connection.encryptedBlob,
       id: documentId,
     });

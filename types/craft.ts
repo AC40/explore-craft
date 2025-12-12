@@ -27,3 +27,15 @@ export type CraftConnection = {
   type: CraftConnectionType;
   encryptedBlob: string;
 };
+
+export type CraftBlock = {
+  id: string;
+  type: string;
+  markdown: string;
+  [key: string]: unknown;
+};
+
+export type CraftBlocksResponse = {
+  content?: CraftBlock[];
+  [key: string]: unknown;
+};
