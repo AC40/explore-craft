@@ -47,6 +47,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "Explore Craft API - Document Management",
+        type: "image/png",
       },
     ],
   },
@@ -55,7 +56,14 @@ export const metadata: Metadata = {
     title: "Explore Craft API - Get Document IDs Quickly",
     description:
       "Get document IDs quickly. A local-first browser application to explore your Craft workspace through the Craft API.",
-    images: ["/og-image.png"],
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Explore Craft API - Document Management",
+      },
+    ],
     creator: "@aaronrichter",
   },
   robots: {
@@ -74,8 +82,13 @@ export const metadata: Metadata = {
   },
   category: "productivity",
   icons: {
-    icon: "/fav.png",
-    apple: "/fav.png",
+    icon: [
+      { url: "/fav.png", type: "image/png" },
+      { url: "/fav.png", sizes: "32x32", type: "image/png" },
+      { url: "/fav.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/fav.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/fav.png",
   },
 };
 
