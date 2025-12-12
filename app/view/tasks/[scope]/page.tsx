@@ -126,7 +126,10 @@ export default function TasksPage({
               </div>
               <div className="grid auto-rows-min gap-4 md:grid-cols-1">
                 {tasks?.map((task) => (
-                  <div key={task.id} className="border rounded-lg p-4">
+                  <div
+                    key={task.id}
+                    className="border rounded-lg p-4 backdrop-blur-sm bg-white/70 border-white/60"
+                  >
                     <div className="pb-2">
                       <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,7 +89,32 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
-        <Providers>{children}</Providers>
+        <div className="relative min-h-screen overflow-hidden bg-white">
+          {/* Orange blob decorations */}
+          <div className="fixed top-0 left-1/2 -translate-x-1/2 -translate-y-1/3 w-[700px] h-[700px] opacity-80 pointer-events-none z-0">
+            <Image
+              src="/orange-blob.png"
+              alt=""
+              width={700}
+              height={700}
+              className="w-full h-full opacity-50"
+              priority
+            />
+          </div>
+          <div className="fixed top-1/2 right-0 translate-x-1/4 -translate-y-1/3 w-[600px] h-[600px] opacity-60 pointer-events-none z-0">
+            <Image
+              src="/orange-blob.png"
+              alt=""
+              width={600}
+              height={600}
+              className="w-full h-full opacity-50"
+            />
+          </div>
+
+          <div className="relative z-10">
+            <Providers>{children}</Providers>
+          </div>
+        </div>
       </body>
     </html>
   );

@@ -63,7 +63,7 @@ export function ApiInfo({
   } }'`;
 
   return (
-    <Card>
+    <Card className="backdrop-blur-md bg-white/70 border-white/60">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -104,7 +104,7 @@ export function ApiInfo({
         {activeTab === "url" && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-sm bg-muted px-3 py-2 rounded break-all">
+              <code className="flex-1 text-sm bg-white/50 backdrop-blur-sm px-3 py-2 rounded break-all">
                 {fullUrl}
               </code>
               <Button
@@ -117,8 +117,9 @@ export function ApiInfo({
             </div>
             <div className="text-xs text-muted-foreground">
               <strong>Auth:</strong>
-              <div className="mt-1 bg-muted px-2 py-1 rounded">
-                Authorization handled server-side. API key never leaves the server.
+              <div className="mt-1 bg-white/50 backdrop-blur-sm px-2 py-1 rounded">
+                Authorization handled server-side. API key never leaves the
+                server.
               </div>
             </div>
           </div>
@@ -127,7 +128,7 @@ export function ApiInfo({
         {activeTab === "fetch" && (
           <div className="space-y-2">
             <div className="flex items-start gap-2">
-              <pre className="flex-1 text-xs bg-muted px-3 py-2 rounded overflow-x-auto">
+              <pre className="flex-1 text-xs bg-white/50 backdrop-blur-sm px-3 py-2 rounded overflow-x-auto">
                 <code>{fetchCode}</code>
               </pre>
               <Button
@@ -144,7 +145,7 @@ export function ApiInfo({
         {activeTab === "curl" && (
           <div className="space-y-2">
             <div className="flex items-start gap-2">
-              <pre className="flex-1 text-xs bg-muted px-3 py-2 rounded overflow-x-auto">
+              <pre className="flex-1 text-xs bg-white/50 backdrop-blur-sm px-3 py-2 rounded overflow-x-auto">
                 <code>{curlCode}</code>
               </pre>
               <Button

@@ -128,69 +128,90 @@ export default function Page() {
 
   return (
     <div className="w-full min-h-screen flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Card>
-            <CardHeader>
-              <CardTitle>View your Craft Space</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2">
-              <Input
-                type="text"
-                placeholder="Connection name (optional, but helpful 😉)"
-                value={connectionName}
-                onChange={(e) => setConnectionName(e.target.value)}
-              />
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Connection Type</label>
-                <select
-                  value={connectionType}
-                  onChange={(e) =>
-                    setConnectionType(e.target.value as CraftConnectionType)
-                  }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="folders">All Documents (Space)</option>
-                  <option value="documents">Selected Documents</option>
-                  <option value="daily_notes">Daily Notes & Tasks</option>
-                </select>
-              </div>
-              <Input
-                type="url"
-                placeholder="https://connect.craft.do/links/..."
-                required
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-              <div className="relative">
-                <Input
-                  type={showApiKey ? "text" : "password"}
-                  placeholder="API Key (optional)"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="pr-10"
-                />
-                <Button
-                  variant="ghost"
-                  className="absolute right-0 top-0 bottom-0 h-full"
-                  size="icon"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? (
-                    <Eye className="w-4 h-4" />
-                  ) : (
-                    <EyeOff className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-              <Button onClick={handleAddConnection} className="w-full">
-                View
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+        <div className="w-full max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            {/* Left side - Hero content */}
+            <div className="flex flex-col gap-6">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+                Explore Craft
+              </h1>
+              <p className="text-xl md:text-2xl leading-relaxed text-muted-foreground">
+                Get document IDs quickly. A local-first browser application to
+                explore your Craft workspace through the Craft API.
+              </p>
+            </div>
+
+            {/* Right side - Connection form */}
+            <div className="w-full">
+              <Card className="backdrop-blur-md bg-white/70 border-white/60 shadow-xl">
+                <CardHeader>
+                  <CardTitle>View your Craft Space</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Connection name (optional, but helpful 😉)"
+                    value={connectionName}
+                    onChange={(e) => setConnectionName(e.target.value)}
+                    className="bg-white/60 backdrop-blur-sm border-white/80"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium">
+                      Connection Type
+                    </label>
+                    <select
+                      value={connectionType}
+                      onChange={(e) =>
+                        setConnectionType(e.target.value as CraftConnectionType)
+                      }
+                      className="flex h-10 w-full rounded-md border border-white/80 bg-white/60 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="folders">All Documents (Space)</option>
+                      <option value="documents">Selected Documents</option>
+                      <option value="daily_notes">Daily Notes & Tasks</option>
+                    </select>
+                  </div>
+                  <Input
+                    type="url"
+                    placeholder="https://connect.craft.do/links/..."
+                    required
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    className="bg-white/60 backdrop-blur-sm border-white/80"
+                  />
+                  <div className="relative">
+                    <Input
+                      type={showApiKey ? "text" : "password"}
+                      placeholder="API Key (optional)"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="pr-10 bg-white/60 backdrop-blur-sm border-white/80"
+                    />
+                    <Button
+                      variant="ghost"
+                      className="absolute right-0 top-0 bottom-0 h-full hover:bg-white/50"
+                      size="icon"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                    >
+                      {showApiKey ? (
+                        <Eye className="w-4 h-4" />
+                      ) : (
+                        <EyeOff className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <Button onClick={handleAddConnection} className="w-full">
+                    View
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="border-t py-4">
+
+      <div className="border-t border-white/60 py-4 backdrop-blur-md bg-white/60">
         <div className="container mx-auto px-4 text-center">
           <Link
             href="/about"

@@ -21,7 +21,7 @@ import Image from "next/image";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto space-y-16">
           <div className="text-center space-y-4">
@@ -44,7 +44,7 @@ export default function AboutPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            <Card>
+            <Card className="backdrop-blur-md bg-white/70 border-white/60">
               <CardHeader>
                 <Shield className="h-8 w-8 mb-2 text-primary" />
                 <CardTitle>100% Local</CardTitle>
@@ -57,7 +57,7 @@ export default function AboutPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="backdrop-blur-md bg-white/70 border-white/60">
               <CardHeader>
                 <Zap className="h-8 w-8 mb-2 text-primary" />
                 <CardTitle>Fast & Responsive</CardTitle>
@@ -70,7 +70,7 @@ export default function AboutPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="backdrop-blur-md bg-white/70 border-white/60">
               <CardHeader>
                 <FolderTree className="h-8 w-8 mb-2 text-primary" />
                 <CardTitle>Full Workspace Access</CardTitle>
@@ -94,7 +94,7 @@ export default function AboutPage() {
 
             <div className="space-y-12">
               <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden order-2 md:order-1">
+                <div className="relative aspect-video rounded-lg border border-white/60 bg-white/50 backdrop-blur-sm overflow-hidden order-2 md:order-1">
                   <Image
                     src="/img/get-document-ids.png"
                     alt="Document Management - Viewing and copying document IDs"
@@ -129,7 +129,7 @@ export default function AboutPage() {
                     explore your document structure.
                   </p>
                 </div>
-                <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden">
+                <div className="relative aspect-video rounded-lg border border-white/60 bg-white/50 backdrop-blur-sm overflow-hidden">
                   <Image
                     src="/img/view-doc-content.png"
                     alt="Document Content View - Viewing document blocks and content"
@@ -153,7 +153,7 @@ export default function AboutPage() {
                     deadlines all in one interface.
                   </p>
                 </div>
-                <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden">
+                <div className="relative aspect-video rounded-lg border border-white/60 bg-white/50 backdrop-blur-sm overflow-hidden">
                   <Image
                     src="/img/tasks.png"
                     alt="Tasks View - Managing tasks and daily notes"
@@ -176,7 +176,7 @@ export default function AboutPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              <Card>
+              <Card className="backdrop-blur-md bg-white/70 border-white/60">
                 <CardHeader>
                   <div className="text-2xl font-bold text-primary mb-2">1</div>
                   <CardTitle>Connect</CardTitle>
@@ -186,7 +186,7 @@ export default function AboutPage() {
                     Add your Craft space URL and optional API key. Choose from
                     folders, documents, or tasks.
                   </CardDescription>
-                  <div className="relative aspect-video rounded-lg border bg-muted overflow-hidden">
+                  <div className="relative aspect-video rounded-lg border border-white/60 bg-white/50 backdrop-blur-sm overflow-hidden">
                     <Image
                       src="/img/manage-connections.png"
                       alt="Manage Connections - Adding and configuring Craft connections"
@@ -197,7 +197,7 @@ export default function AboutPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="backdrop-blur-md bg-white/70 border-white/60">
                 <CardHeader>
                   <div className="text-2xl font-bold text-primary mb-2">2</div>
                   <CardTitle>Explore</CardTitle>
@@ -210,7 +210,7 @@ export default function AboutPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="backdrop-blur-md bg-white/70 border-white/60">
                 <CardHeader>
                   <div className="text-2xl font-bold text-primary mb-2">3</div>
                   <CardTitle>Stay Local</CardTitle>
