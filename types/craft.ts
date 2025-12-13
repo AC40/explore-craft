@@ -10,6 +10,8 @@ export type CraftDocument = {
   title: string;
 };
 
+export type CraftCollectionSchema = Record<string, unknown>;
+
 export type CraftTask = {
   id: string;
   markdown: string;

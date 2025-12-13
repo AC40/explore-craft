@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { AppFooter } from "@/components/app-footer";
 import { ApiInfo } from "@/components/api-info";
+import { CollectionSchemaPanel } from "@/components/collection-schema-panel";
 
 export default function DocumentsPage() {
   const { activeConnection } = useCraft();
@@ -88,11 +89,14 @@ export default function DocumentsPage() {
                     </div>
                   )}
                 </div>
-                <ApiInfo
-                  connection={activeConnection}
-                  endpoint="documents"
-                  description="Fetch all selected documents"
-                />
+                <div className="grid gap-4">
+                  <ApiInfo
+                    connection={activeConnection}
+                    endpoint="documents"
+                    description="Fetch all selected documents"
+                  />
+                  <CollectionSchemaPanel connection={activeConnection} />
+                </div>
               </div>
               <div className="grid auto-rows-min gap-4 md:grid-cols-1">
                 {documents?.map((document) => (

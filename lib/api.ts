@@ -1,9 +1,10 @@
 import {
+  CraftBlocksResponse,
+  CraftCollectionSchema,
   CraftConnection,
   CraftDocument,
   CraftFolder,
   CraftTask,
-  CraftBlocksResponse,
 } from "@/types/craft";
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -66,6 +67,19 @@ class CraftAPI {
       blob: connection.encryptedBlob,
       id: documentId,
     });
+  }
+
+  async getCollectionSchema(
+    connection: CraftConnection,
+    collectionId: string
+  ): Promise<CraftCollectionSchema> {
+    return postJson<CraftCollectionSchema>(
+      "/api/craft/collections/schema",
+      {
+        blob: connection.encryptedBlob,
+        collectionId,
+      }
+    );
   }
 }
 

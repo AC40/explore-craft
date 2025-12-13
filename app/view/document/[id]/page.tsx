@@ -28,6 +28,7 @@ import { AppFooter } from "@/components/app-footer";
 import { ApiInfo } from "@/components/api-info";
 import Link from "next/link";
 import { CraftBlock } from "@/types/craft";
+import { CollectionSchemaPanel } from "@/components/collection-schema-panel";
 
 export default function DocumentPage({
   params,
@@ -38,8 +39,17 @@ export default function DocumentPage({
   const router = useRouter();
   const { id } = use(params);
   const [viewMode, setViewMode] = useState<"json" | "blocks">("blocks");
+  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(
+    null
+  );
+  const [activeCollectionLabel, setActiveCollectionLabel] =
+    useState<string>("");
 
-  const { data: blocks, isLoading, error } = useQuery({
+  const {
+    data: blocks,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: [activeConnection?.id, "blocks", id],
     queryFn: async () => {
       if (!activeConnection) return null;
@@ -61,18 +71,38 @@ export default function DocumentPage({
   }
 
   const jsonString = blocks ? JSON.stringify(blocks, null, 2) : "";
-  
+
   // Extract content array from blocks data
-  const contentBlocks: CraftBlock[] = blocks?.content && Array.isArray(blocks.content)
-    ? blocks.content.filter(
-        (block: unknown): block is CraftBlock =>
-          typeof block === "object" &&
-          block !== null &&
-          "id" in block &&
-          "type" in block &&
-          "markdown" in block
-      )
-    : [];
+  const contentBlocks: CraftBlock[] =
+    blocks?.content && Array.isArray(blocks.content)
+      ? blocks.content.filter(
+          (block: unknown): block is CraftBlock =>
+            typeof block === "object" &&
+            block !== null &&
+            "id" in block &&
+            "type" in block &&
+            "markdown" in block
+        )
+      : [];
+
+  const getCollectionIdFromBlock = (block: CraftBlock) => {
+    console.log("block", block);
+    if (!block) return undefined;
+    if (block.type === "collection") {
+      return block.id;
+    }
+    return undefined;
+  };
+
+  const handleViewSchema = (block: CraftBlock) => {
+    const collectionId = getCollectionIdFromBlock(block);
+    if (!collectionId) {
+      toast.error("Unable to determine collection ID for this block");
+      return;
+    }
+    setActiveCollectionId(collectionId);
+    setActiveCollectionLabel(block.markdown || block.id);
+  };
 
   return (
     <SidebarProvider>
@@ -85,7 +115,9 @@ export default function DocumentPage({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/view/documents">Documents</BreadcrumbLink>
+                  <BreadcrumbLink href="/view/documents">
+                    Documents
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -100,13 +132,13 @@ export default function DocumentPage({
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
-              <p className="text-muted-foreground">Loading document blocks...</p>
+              <p className="text-muted-foreground">
+                Loading document blocks...
+              </p>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center p-8">
-              <p className="text-destructive">
-                Failed to load document blocks
-              </p>
+              <p className="text-destructive">Failed to load document blocks</p>
             </div>
           ) : blocks ? (
             <>
@@ -179,9 +211,11 @@ export default function DocumentPage({
                   )}
                 </div>
                 {viewMode === "json" ? (
-                  <pre className="p-4 overflow-x-auto bg-background text-sm">
-                    <code>{jsonString}</code>
-                  </pre>
+                  <div className="overflow-auto bg-background max-h-96">
+                    <pre className="p-4 text-sm whitespace-pre-wrap wrap-break-word min-w-0">
+                      <code>{jsonString}</code>
+                    </pre>
+                  </div>
                 ) : (
                   <div className="p-4 bg-background space-y-4">
                     {contentBlocks.length > 0 ? (
@@ -201,34 +235,61 @@ export default function DocumentPage({
                                 </span>
                               </div>
                               <div className="prose prose-sm max-w-none">
-                                <pre className="whitespace-pre-wrap font-sans text-sm bg-muted p-3 rounded">
+                                <pre className="whitespace-pre-wrap font-sans text-sm bg-muted p-3 rounded overflow-x-auto max-w-full">
                                   {block.markdown}
+                                  {block.type === "collection" &&
+                                    getCollectionIdFromBlock(block) && (
+                                      <Button
+                                        variant="outline"
+                                        className="ml-2"
+                                        size="sm"
+                                        onClick={() => handleViewSchema(block)}
+                                      >
+                                        View Schema
+                                      </Button>
+                                    )}
                                 </pre>
                               </div>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => {
-                                toast.success("Block ID copied");
-                                navigator.clipboard.writeText(block.id);
-                              }}
-                            >
-                              <CopyIcon className="w-4 h-4" />
-                            </Button>
+                            <div className="flex flex-col gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                  toast.success("Block ID copied");
+                                  navigator.clipboard.writeText(block.id);
+                                }}
+                              >
+                                <CopyIcon className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))
                     ) : (
                       <div className="flex items-center justify-center p-8">
                         <p className="text-muted-foreground">
-                          No blocks found. The response may not have a content array, or blocks may not have the expected structure.
+                          No blocks found. The response may not have a content
+                          array, or blocks may not have the expected structure.
                         </p>
                       </div>
                     )}
                   </div>
                 )}
               </div>
+              {activeCollectionId && (
+                <div className="space-y-2">
+                  <CollectionSchemaPanel
+                    connection={activeConnection}
+                    defaultCollectionId={activeCollectionId}
+                    onClose={() => setActiveCollectionId(null)}
+                    showInput={false}
+                    panelTitle={`Schema for ${
+                      activeCollectionLabel || "collection"
+                    }`}
+                  />
+                </div>
+              )}
             </>
           ) : null}
         </div>
@@ -237,4 +298,3 @@ export default function DocumentPage({
     </SidebarProvider>
   );
 }
-
