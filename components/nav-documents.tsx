@@ -14,7 +14,7 @@ import { File } from "lucide-react";
 
 export function NavDocuments({ connection }: { connection: CraftConnection }) {
   const pathname = usePathname();
-  const isActive = pathname === "/view/documents";
+  const isActive = pathname === "/view/documents" || pathname.startsWith("/view/document/");
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">

@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     const data = await craftFetch(blob, "folders");
     return NextResponse.json(data);
   } catch (error) {
+    console.log(request);
     console.error("[craft/folders] error", error);
     return NextResponse.json(
       { error: "Failed to fetch folders" },

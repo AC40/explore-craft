@@ -5,6 +5,7 @@ import * as React from "react";
 import { NavUser } from "@/components/nav-user";
 import { ConnectionSwitcher } from "@/components/connection-switcher";
 import { NavDocuments } from "@/components/nav-documents";
+import { NavHome } from "@/components/nav-home";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +25,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <ConnectionSwitcher connections={connections} />
       </SidebarHeader>
       <SidebarContent>
+        {activeConnection && <NavHome connection={activeConnection} />}
         {activeConnection &&
           (activeConnection.type === "folders" ? (
             <NavFolders connection={activeConnection} />
